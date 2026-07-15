@@ -9,6 +9,15 @@ This app runs on the owner's phone, captures payment notifications from banking/
 
 ## Screenshots
 
+<img width="1879" height="899" alt="Dashboard user" src="https://github.com/user-attachments/assets/fd9b830c-7351-41a3-9c81-1cbaa7e10d64" />
+
+<img width="1031" height="896" alt="publicView" src="https://github.com/user-attachments/assets/f59b0a48-1c81-4c54-bcff-7af4d4bc896a" />
+
+<img width="575" height="1280" alt="Mobile" src="https://github.com/user-attachments/assets/86fa120c-12ff-4d34-9340-7b2ae77be8b1" />
+
+<img width="575" height="1280" alt="Mobile2" src="https://github.com/user-attachments/assets/dcc91fcf-cb0e-4e5c-a9e1-44fbfae7644d" />
+
+
 ## What it does
 
 1. **Pairing** — the user scans a QR from the web dashboard (encodes server URL + device token). No login inside the app.
