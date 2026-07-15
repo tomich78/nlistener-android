@@ -1,0 +1,29 @@
+# ─── Secretos / credenciales — NUNCA subir ───────────────────────────────
+keystore.properties
+*.jks
+*.keystore
+# Config de Firebase: contiene el ID del proyecto y la API key de Android.
+# Necesario para compilar — se descarga desde la consola de Firebase.
+google-services.json
+
+# ─── Local / específico de la máquina ────────────────────────────────────
+local.properties
+
+# ─── Build ───────────────────────────────────────────────────────────────
+build/
+.gradle/
+.cxx/
+.externalNativeBuild/
+/captures
+*.apk
+*.aab
+release/
+
+# ─── IDE ─────────────────────────────────────────────────────────────────
+*.iml
+.idea/
+.kotlin/
+
+# ─── SO ──────────────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db

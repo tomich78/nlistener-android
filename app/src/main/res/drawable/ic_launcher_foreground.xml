@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+    <!-- Banco: techo/frontón -->
+    <path
+        android:fillColor="#1A1A1A"
+        android:pathData="M54,22 L18,42 H90 Z" />
+
+    <!-- Banco: friso (barra entre techo y columnas) -->
+    <path
+        android:fillColor="#1A1A1A"
+        android:pathData="M20,42 H88 V48 H20 Z" />
+
+    <!-- Columnas (5) -->
+    <path
+        android:fillColor="#1A1A1A"
+        android:pathData="M24,48 H29 V72 H24 Z
+                          M36,48 H41 V72 H36 Z
+                          M48,48 H53 V72 H48 Z
+                          M60,48 H65 V72 H60 Z
+                          M72,48 H77 V72 H72 Z" />
+
+    <!-- Base/escalones -->
+    <path
+        android:fillColor="#1A1A1A"
+        android:pathData="M18,72 H90 V77 H18 Z
+                          M21,77 H87 V82 H21 Z" />
+
+    <!-- Campanita (top-right) -->
+    <path
+        android:fillColor="#1A1A1A"
+        android:pathData="M76,18
+                          C76,14 79,11 83,11
+                          C87,11 90,14 90,18
+                          L90,26 L76,26 Z" />
+    <path
+        android:fillColor="#1A1A1A"
+        android:pathData="M74,26 H92 V28 H74 Z" />
+    <path
+        android:fillColor="#1A1A1A"
+        android:pathData="M81,28 C81,30 85,30 85,28" />
+
+</vector>
