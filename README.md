@@ -7,7 +7,7 @@ This app runs on the owner's phone, captures payment notifications from banking/
 🔗 **Web app + API:** [github.com/tomich78/notification-listener](https://github.com/tomich78/notification-listener)
 🔗 **Live:** [www.nlistener.com.ar](https://www.nlistener.com.ar)
 
-<!-- Agregá acá 1-2 screenshots de la app: pantalla principal y el escáner QR. -->
+## Screenshots
 
 ## What it does
 

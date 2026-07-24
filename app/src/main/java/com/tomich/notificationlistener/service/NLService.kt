@@ -67,9 +67,13 @@ class NLService : NotificationListenerService() {
         val content = extractContent(sbn) ?: return
 
         val notif = PendingNotification(
-            app    = packageToName(sbn.packageName),
-            text   = content,
-            sbnKey = sbn.key,
+            app       = packageToName(sbn.packageName),
+            text      = content,
+            // postTime = cuándo el sistema publicó la notificación (cuándo entró el
+            // pago). Es estable entre reenvíos y coincide con el valor que usa la
+            // recaptura al reconectar, así el dedupeId es idéntico por ambos caminos.
+            timestamp = sbn.postTime,
+            sbnKey    = sbn.key,
         )
 
         // Guardar en disco inmediatamente — sobrevive a process death

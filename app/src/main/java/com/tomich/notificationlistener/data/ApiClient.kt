@@ -32,18 +32,25 @@ object ApiClient {
     private val EMPTY_BODY: RequestBody = "{}".toRequestBody(JSON_MEDIA)
 
     /**
-     * ID determinista para deduplicar en el servidor. Se calcula a partir de la
-     * clave estable de la notificación (sbnKey) + su texto, de modo que reenvíos
-     * de la MISMA notificación (reintentos, recaptura al reconectar, re-posts del
-     * OEM) produzcan siempre el mismo ID y el servidor sobrescriba el doc en vez
-     * de crear un duplicado. Las notificaciones sin sbnKey (prueba/manual) no se
-     * deduplican: devuelve null y el servidor les asigna un ID nuevo.
+     * ID determinista para deduplicar en el servidor. Combina tres cosas estables
+     * de la notificación: su clave en la barra (sbnKey), el momento en que el
+     * sistema la publicó (timestamp = postTime) y su texto.
+     *
+     * - Reenvíos de la MISMA notificación (reintentos, recaptura al reconectar)
+     *   dan el mismo ID → el servidor sobrescribe en vez de duplicar.
+     * - Dos pagos DISTINTOS que la app del banco muestre en la misma ranura
+     *   (mismo sbnKey) y hasta con el mismo texto (mismo monto, misma persona)
+     *   tienen distinto postTime → IDs distintos → NO se pisan. Sin el postTime,
+     *   uno de esos pagos se perdería.
+     *
+     * Las notificaciones sin sbnKey (prueba/manual) no se deduplican: devuelve
+     * null y el servidor les asigna un ID nuevo.
      */
     private fun dedupeId(n: PendingNotification): String? {
         val key = n.sbnKey?.takeIf { it.isNotBlank() } ?: return null
         val digest = java.security.MessageDigest
             .getInstance("SHA-256")
-            .digest("$key|${n.text}".toByteArray(Charsets.UTF_8))
+            .digest("$key|${n.timestamp}|${n.text}".toByteArray(Charsets.UTF_8))
         return digest.joinToString("") { "%02x".format(it.toInt() and 0xff) }
     }
 

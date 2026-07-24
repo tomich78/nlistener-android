@@ -62,6 +62,33 @@ class KeepAliveService : Service() {
                 am.setExact(AlarmManager.RTC_WAKEUP, triggerAt, pi)
             }
         }
+
+        /**
+         * Corta TODOS los mecanismos que reviven el servicio: la alarma del
+         * AlarmManager y el worker periódico de WorkManager. Necesario porque la
+         * alarma arranca el servicio directamente (getForegroundService), sin
+         * pasar por BootReceiver, así que apagar el switch no alcanzaba: el
+         * servicio revivía cada 4 minutos y volvía a aparecer la notificación.
+         */
+        fun cancel(context: Context) {
+            val am = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+            val intent = Intent(context, KeepAliveService::class.java).apply {
+                action = ACTION_RESTART
+            }
+            val pi = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                PendingIntent.getForegroundService(
+                    context, 0, intent,
+                    PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+                )
+            } else {
+                PendingIntent.getService(
+                    context, 0, intent,
+                    PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+                )
+            }
+            am.cancel(pi)
+            WorkManager.getInstance(context).cancelUniqueWork("nl_keepalive_worker")
+        }
     }
 
     private var wakeLock: PowerManager.WakeLock? = null
@@ -73,11 +100,35 @@ class KeepAliveService : Service() {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        // Guard: la alarma reinicia el servicio directamente, sin pasar por
+        // BootReceiver. Si el usuario apagó el switch, cortamos todo acá mismo
+        // para que no reviva ni quede la notificación colgada.
+        if (!PrefsManager(applicationContext).isServiceEnabled) {
+            cancel(applicationContext)
+            stopForeground(STOP_FOREGROUND_REMOVE)
+            stopSelf()
+            return START_NOT_STICKY
+        }
+
         val notification = buildNotification()
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
-            startForeground(NOTIF_ID, notification, ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC)
-        } else {
-            startForeground(NOTIF_ID, notification)
+        try {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+                startForeground(NOTIF_ID, notification, ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE)
+            } else {
+                startForeground(NOTIF_ID, notification)
+            }
+        } catch (e: Exception) {
+            // Android 12+ puede rechazar el arranque en foreground (restricciones de
+            // background o límites de tiempo del tipo de FGS). La excepción salta ACÁ
+            // adentro, no en el caller — si no la atrapamos es un crash fatal en loop
+            // (AlarmManager reintenta cada 4 min). Degradar: dejar programado el
+            // próximo intento y salir sin crashear. El NotificationListener sigue
+            // vivo por su propio binding con el sistema.
+            android.util.Log.w("KeepAliveService", "startForeground rechazado: ${e.message}")
+            schedule(applicationContext)
+            scheduleKeepAliveWorker()
+            stopSelf()
+            return START_NOT_STICKY
         }
 
         // WakeLock con timeout — no indefinido, se renueva vía AlarmManager
@@ -127,14 +178,32 @@ class KeepAliveService : Service() {
         )
     }
 
+    /**
+     * Android 15+: si el tipo de FGS tiene límite de tiempo y se agota, el sistema
+     * llama esto y da unos segundos para frenar; si no frenamos, ANR/crash.
+     * specialUse hoy no tiene límite, pero esto nos protege si eso cambia o si
+     * algún OEM lo aplica igual.
+     */
+    override fun onTimeout(startId: Int, fgsType: Int) {
+        wakeLock?.let { if (it.isHeld) it.release() }
+        // Dejar programado el próximo intento antes de morir
+        schedule(applicationContext)
+        scheduleKeepAliveWorker()
+        stopSelf()
+    }
+
     override fun onBind(intent: Intent?): IBinder? = null
 
     override fun onDestroy() {
         scope.cancel()
         wakeLock?.let { if (it.isHeld) it.release() }
         stopForeground(STOP_FOREGROUND_REMOVE)
-        // Auto-reiniciar si fue matado por el sistema
-        schedule(applicationContext)
+        // Auto-reiniciar solo si el sistema nos mató con el servicio ACTIVO.
+        // Si el usuario apagó el switch (isServiceEnabled == false) NO reprogramamos,
+        // para que quede realmente apagado.
+        if (PrefsManager(applicationContext).isServiceEnabled) {
+            schedule(applicationContext)
+        }
         super.onDestroy()
     }
 

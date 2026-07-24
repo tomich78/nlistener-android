@@ -15,14 +15,14 @@ val keystoreProps = Properties().apply {
 
 android {
     namespace = "com.tomich.notificationlistener"
-    compileSdk = 35
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.tomich.notificationlistener"
         minSdk = 26
-        targetSdk = 35
-        versionCode = 11
-        versionName = "2.0"
+        targetSdk = 36
+        versionCode = 14
+        versionName = "2.2"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 

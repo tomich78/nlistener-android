@@ -8,7 +8,7 @@
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-feature android:name="android.hardware.camera" android:required="false" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
     <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
@@ -39,12 +39,21 @@
             </intent-filter>
         </activity>
 
-        <!-- Mantiene el proceso vivo en primer plano -->
+        <!-- Mantiene el proceso vivo en primer plano.
+             Tipo specialUse: en Android 15 dataSync tiene un límite de ~6h/día
+             y después el sistema rechaza el arranque con
+             ForegroundServiceStartNotAllowedException. specialUse no tiene límite
+             y es el tipo correcto: mantener vivo el NotificationListener no encaja
+             en ninguna otra categoría. -->
         <service
             android:name=".service.KeepAliveService"
             android:exported="false"
             android:stopWithTask="false"
-            android:foregroundServiceType="dataSync" />
+            android:foregroundServiceType="specialUse">
+            <property
+                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                android:value="Keeps the NotificationListenerService alive so the user's selected payment notifications are forwarded in real time to their own business dashboard. Core functionality of the app." />
+        </service>
 
         <!-- Escucha las notificaciones del sistema -->
         <service

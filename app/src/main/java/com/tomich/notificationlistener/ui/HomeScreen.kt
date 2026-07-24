@@ -151,7 +151,12 @@ fun HomeScreen(prefs: PrefsManager, onReset: () -> Unit) {
                         } catch (e: Exception) {
                             android.util.Log.w("HomeScreen", "No se pudo iniciar KeepAliveService: ${e.message}")
                         }
-                    } else context.stopService(intent)
+                    } else {
+                        // Cortar la alarma y el worker ANTES de frenar el servicio,
+                        // si no revive en el próximo ciclo y la notificación reaparece.
+                        KeepAliveService.cancel(context)
+                        context.stopService(intent)
+                    }
                 }
             )
             Spacer(modifier = Modifier.height(12.dp))
