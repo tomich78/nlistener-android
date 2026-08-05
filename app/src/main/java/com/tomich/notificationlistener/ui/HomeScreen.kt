@@ -2,6 +2,7 @@ package com.tomich.notificationlistener.ui
 
 import android.content.ClipData
 import android.content.ClipboardManager
+import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
@@ -97,6 +98,15 @@ fun HomeScreen(prefs: PrefsManager, onReset: () -> Unit) {
                 hasNotifPermission = hasNotificationPermission(context)
                 isBatteryOptimized = isBatteryOptimized(context)
                 lastSyncTs = prefs.lastSyncTimestamp
+                // Forzar la reconexión del listener por si el sistema lo desvinculó
+                // en segundo plano (Motorola y otros lo hacen por ahorro de batería).
+                if (hasNotifPermission && prefs.isServiceEnabled) {
+                    try {
+                        android.service.notification.NotificationListenerService.requestRebind(
+                            ComponentName(context, com.tomich.notificationlistener.service.NLService::class.java)
+                        )
+                    } catch (_: Exception) {}
+                }
             }
         }
         lifecycleOwner.lifecycle.addObserver(observer)
@@ -206,6 +216,20 @@ fun HomeScreen(prefs: PrefsManager, onReset: () -> Unit) {
                 BrandBatteryCard(
                     brand = "Huawei",
                     steps = "Ajustes → Batería → Inicio de aplicaciones → NListener → Gestión manual → habilitá todo",
+                    onClick = { openAppBatterySettings(context) }
+                )
+                Spacer(modifier = Modifier.height(12.dp))
+            }
+        }
+
+        // Aviso Motorola (My UX pausa apps y "optimiza" la batería en background)
+        if (isMotorolaDevice()) {
+            item {
+                BrandBatteryCard(
+                    brand = "Motorola",
+                    steps = "Ajustes → Apps → NListener → Batería → elegí \"Sin restricciones\". " +
+                            "Y en Ajustes → Batería → desactivá el ahorro/optimización para NListener. " +
+                            "Revisá que no esté en \"Apps en suspensión\".",
                     onClick = { openAppBatterySettings(context) }
                 )
                 Spacer(modifier = Modifier.height(12.dp))
@@ -849,6 +873,10 @@ private fun isOppoDevice(): Boolean =
 private fun isHuaweiDevice(): Boolean =
     android.os.Build.MANUFACTURER.equals("Huawei", ignoreCase = true) ||
     android.os.Build.MANUFACTURER.equals("Honor", ignoreCase = true)
+
+private fun isMotorolaDevice(): Boolean =
+    android.os.Build.MANUFACTURER.equals("motorola", ignoreCase = true) ||
+    android.os.Build.MANUFACTURER.equals("lenovo", ignoreCase = true)
 
 private fun openAppBatterySettings(context: Context) {
     val intents = listOf(
