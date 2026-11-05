@@ -32,15 +32,20 @@ OkHttp.
 **URL de eliminación de cuentas** → la página del panel:
 
 ```
-https://nlistener.com.ar/delete-account
+https://www.nlistener.com.ar/delete-account
 ```
 
 Conviene usar el dominio propio y no la URL de `*.vercel.app`: es el que la
-app le muestra al usuario en la pantalla de configuración
-(`ui/SetupScreen.kt`) y el que conviene que figure en la ficha. **A CONFIRMAR:**
-que el dominio sirva esa ruta y que la página cumpla los tres requisitos de
-Google (nombrar la app y al desarrollador, mostrar los pasos, y decir qué se
-borra y qué se conserva).
+app le muestra al usuario en la pantalla de configuración (`ui/SetupScreen.kt`).
+
+**Verificado el 5 de noviembre de 2026:** la ruta responde 200. Ojo con el
+`www`: el ápex `nlistener.com.ar` contesta 308 y redirige a
+`www.nlistener.com.ar`, así que conviene cargar directamente la forma con
+`www`, que es la definitiva.
+
+**A CONFIRMAR:** que la página cumpla los tres requisitos de Google (nombrar
+la app y al desarrollador, mostrar los pasos, y decir qué se borra y qué se
+conserva).
 
 **Métodos de creación de cuentas** → **A CONFIRMAR**. La app en sí **no** crea
 cuentas ni tiene usuario y contraseña: se vincula escaneando un QR que trae un
@@ -168,8 +173,10 @@ La URL que va en la ficha. **A CONFIRMAR** cuál está puesta hoy: conviene que
 sea el dominio propio y no `*.vercel.app`.
 
 ```
-https://nlistener.com.ar/privacy
+https://www.nlistener.com.ar/privacy
 ```
+
+Verificado el 5 de noviembre de 2026: responde 200, con el texto nuevo.
 
 El texto fue reescrito en noviembre de 2026, porque el anterior estaba
 desactualizado y decía que no se recolectaba ningún correo y que las
